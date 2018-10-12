@@ -6,11 +6,33 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def MSE_R2(z,z_s,n):
-    mse= (np.sum((z-z_s)**2, axis=0))/n
-    r=1-(mse/(sum((z-np.mean(z))**2)))
-    return mse, r
+    s=0
+    r=0
+    z_=MEAN(z)
+    for i in range(len(z)):
+            
+            s+=(z[i]-z_s[i])**2
+            r+=(z[i]-z_)**2
+            
+    
+    
+    mse=s/len(z) #np.mean( np.mean((z - z_s)**2) ) ...(np.sum((z-z_s)**2, axis=0))/n
+    
+    r2=1-(s/r)#1-(mse*(len(z))/(sum((z-np.mean(z))**2)))
+    return mse, r2
+def MEAN(z):
+    s=0
+    for i in range(len(z)):
+        s+=z[i]
+    return (s/len(z))
 def Bias_var(z,z_p):
-    var = np.sum(z_p**2)/len(z_p)-(np.sum(z_p)/len(z_p))**2
+    s=0
+    z_=MEAN(z_p)
+    z_2=MEAN(z_p**2)
+    for i in range(len(z)):
+        s+=(z_p[i] -z_)**2
+    var = z_2-z_**2#s/len(z_p)
+    #var = np.sum(z_p**2)/len(z_p)-(np.sum(z_p)/len(z_p))**2
     bias = (z-np.sum(z_p)/len(z_p))**2
     bias = (np.sum(bias)/len(bias))**2
     return bias,var
@@ -38,14 +60,14 @@ def X_matrise(x,y,j,n):
         else:
             X[2*i]=y**(i)
     return X.T       
-
+"""
 def Bias_var(z,z_p):
     var = np.sum(z_p**2)/len(z_p)-(np.sum(z_p)/len(z_p))**2
     bias = (z-np.sum(z_p)/len(z_p))**2
     bias = (np.sum(bias)/len(bias))**2
     return bias,var
     
-    
+"""    
     
     
 
@@ -77,9 +99,9 @@ M_beta = np.zeros(d)
 M_var = np.zeros(d)
 M_bias = np.zeros(d)
 
-for g in range(6,Grad):
+for g in range(1,Grad):
 
-    for j in range(1):#len(x_train)):
+    for j in range(len(x_train)):
         x=x_train[j]
         y=y_train[j]
        
@@ -120,7 +142,7 @@ for g in range(6,Grad):
         test_X= X_matrise(x_test_p,y_test_p,g,n) 
         z_s = (test_X@beta).T
        
-        
+        """
         fig = plt.figure()
         ax = fig.add_subplot(1,2,1,projection='3d')
         ax.plot_surface(x_test,y_test,z_s.reshape(n,n),cmap=cm.viridis,linewidth=0)
@@ -129,12 +151,12 @@ for g in range(6,Grad):
         ax = fig.add_subplot(1,2,2,projection='3d')
         ax.plot_surface(x_test,y_test,z_test.reshape(n,n),cmap=cm.viridis,linewidth=0)
         plt.title(' Ekte Overflate')
-        fig.savefig('C:\\Users\\eirik\\OneDrive\\Dokumenter\\Fys-stk\\olsA_plot.png')
-   
+        #.savefig('C:\\Users\\eirik\\OneDrive\\Dokumenter\\Fys-stk\\olsA_plot.png')
+        """
        
         
-        mse, r2=MSE_R2(z_p,z_s,n)
-        bias, var=Bias_var(z_p,z_s)
+        mse, r2=MSE_R2(z_test_p,z_s,n)
+        bias, var=Bias_var(z_test_p,z_s)
         M_mse[g-1][j]= mse
         M_r2[g-1][j]= r2
         M_var[g-1][j]= var
@@ -151,7 +173,7 @@ M_r2T= M_r2.T
 M_mseT= M_mse.T
 M_varT= M_var.T
 M_biasT= M_bias.T
-"""
+
 for i in range(6):
         A_mse[i]=np.sum(M_mse[i])/len(M_mse[i]) 
         A_r2[i]=np.sum(M_r2[i])/9.0 
@@ -220,4 +242,4 @@ plt.title('')
 
 fig4.savefig('C:\\Users\\eirik\\OneDrive\\Dokumenter\\Fys-stk\\bias.png')
 plt.show()
-"""
+

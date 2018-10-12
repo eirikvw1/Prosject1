@@ -24,7 +24,7 @@ def surface_plot(surface,title, surface1=None):
         ax = fig.add_subplot(1,2,2,projection='3d')
         ax.plot_surface(X,Y,surface1,cmap=cm.viridis,linewidth=0)
         plt.title(title)
-        fig.savefig('C:\\Users\\eirik\\OneDrive\\Dokumenter\\Fys-stk\\PlotL.png')
+        #fig.savefig('C:\\Users\\eirik\\OneDrive\\Dokumenter\\Fys-stk\\PlotL.png')
     else:
         ax = fig.gca(projection='3d')
         ax.plot_surface(X,Y,surface,cmap=cm.viridis,linewidth=0)
@@ -100,8 +100,7 @@ def X_matrise2(x,y,G,b,z,l):
                     X1[j][2*g]=(y_)**(g)
       
         z_s=lasso.predict(X1)
-        print(z_s)
-        print('..')
+        
         
         for a in range(len(z_s)):
             out[i][a]=z_s[a]
@@ -123,17 +122,21 @@ patch_size_col = 150
 # Define their axes
 rows = np.linspace(0,1,patch_size_row)
 cols = np.linspace(0,1,patch_size_col)
+rows1=np.random.rand(patch_size_row,1)
+rows1=sorted(rows1.reshape(1,-1)[0])
+cols1=np.random.rand(patch_size_col,1)
+cols1=sorted(cols1.reshape(1,-1)[0])
 [C,R] = np.meshgrid(cols,rows)
 x = C.reshape(-1,1)
 y = R.reshape(-1,1)
 num_data = patch_size_row*patch_size_col
 # Find the start indices of each patch
-num_patches = 1
+num_patches = 5
 np.random.seed(4155)
 
 row_starts = np.random.randint(0,n-patch_size_row,num_patches)
 col_starts = np.random.randint(0,m-patch_size_col,num_patches)
-d1=(1,1)
+d1=(8,9)
 MA_mse = np.zeros(d1)
 MA_r2 = np.zeros(d1)
 MA_beta = np.zeros(d1)
@@ -141,10 +144,10 @@ MA_var = np.zeros(d1)
 MA_bias = np.zeros(d1)
 
 Grad =7
-d=(1,1)
+d=(5,9)
 
 
-for g in range(10,11):
+for g in range(4,12):
     M_mse = np.zeros(d)
     M_r2 = np.zeros(d)
     M_beta = np.zeros(d)
@@ -161,7 +164,7 @@ for g in range(10,11):
 
             z = patch.reshape(-1,1)
             X_data=X_matrise(x,y, g,num_data)
-            lam_values = [1e-4]
+            lam_values = [1e-4,1e-3,1e-2,1e-1,1,1e1,1e2,1e3,1e4]
             num_values = len(lam_values)
             beta_r = np.zeros((1+g*2,num_values))
             I = np.eye(1+g*2)
@@ -170,17 +173,18 @@ for g in range(10,11):
                     
         
     
-                    X_pred=X_matrise2(cols, rows,g,X_data,z,l)
+                    X_pred=X_matrise2(cols1, rows1,g,X_data,z,l)
        
 
 
        
-                    z_p = X_pred
-                    
-                    mse = np.sum( (z_p- patch)**2 )/num_data
-                    var = np.sum( (z_p - np.mean(z_p))**2 )/num_data
-                    bias = (np.sum( (patch - np.mean(z_p))**2 )/num_data)**2
-                    R2 = 1 - np.sum( (z_p - patch)**2 )/np.sum( (patch - np.mean(patch))**2 )
+                    z_p = np.ravel(X_pred)
+                    mse, R2=MSE_R2(np.ravel(patch),z_p,len(z_p))
+                    bias, var=Bias_var(np.ravel(patch),z_p)  
+                    #mse = np.sum( (z_p- patch)**2 )/num_data
+                    #var = np.sum( (z_p - np.mean(z_p))**2 )/num_data
+                    #bias = (np.sum( (patch - np.mean(z_p))**2 )/num_data)**2
+                    #R2 = 1 - np.sum( (z_p - patch)**2 )/np.sum( (patch - np.mean(patch))**2 )
         
                     M_mse[i][l]=mse  
                     M_r2[i][l]=R2  
@@ -190,22 +194,23 @@ for g in range(10,11):
         
         
                     
-            surface_plot(z_p,'Fitted terrain surface',patch)
+            #surface_plot(z_p,'Fitted terrain surface',patch)
             
     M_mseT = M_mse.T
     M_r2T = M_r2.T
     M_varT = M_var.T
     M_biasT = M_bias.T  
-    """
-    for a in range(7):
+   
+    for a in range(9):
        
-       MA_mse[g-4][a]=np.sum(M_mseT[a])/2.0
-       MA_r2[g-4][a]=np.sum(M_r2T[a])/2.0
-       MA_var[g-4][a]=np.sum(M_varT[a])/2.0
-       MA_bias[g-4][a]=np.sum(M_biasT[a])/2.0    
-    """
-"""    
-plt.show() 
+       MA_mse[g-4][a]=np.sum(M_mseT[a])/5
+       MA_r2[g-4][a]=np.sum(M_r2T[a])/5
+       MA_var[g-4][a]=np.sum(M_varT[a])/5
+       MA_bias[g-4][a]=np.sum(M_biasT[a])/5    
+    
+   
+
+fig1=plt.figure()
 for i in range(8):
     
     plt.plot(lam_values,MA_mse[i],'-', label=("Grad",i+1))
@@ -262,4 +267,3 @@ plt.xscale('log')
 plt.title('Polynom grad')
 fig4.savefig('C:\\Users\\eirik\\OneDrive\\Dokumenter\\Fys-stk\\bias(ELi).png')
 plt.show()   
-"""

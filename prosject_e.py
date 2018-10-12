@@ -27,6 +27,39 @@ def surface_plot(surface,title, surface1=None):
         ax.plot_surface(X,Y,surface,cmap=cm.viridis,linewidth=0)
         plt.title(title)
 def MSE_R2(z,z_s,n):
+    s=0
+    r=0
+    z_=MEAN(z)
+    for i in range(len(z)):
+            
+            s+=(z[i]-z_s[i])**2
+            r+=(z[i]-z_)**2
+            
+    
+    
+    mse=s/len(z) #np.mean( np.mean((z - z_s)**2) ) ...(np.sum((z-z_s)**2, axis=0))/n
+    
+    r2=1-(s/r)#1-(mse*(len(z))/(sum((z-np.mean(z))**2)))
+    return mse, r2
+
+def MEAN(z):
+    s=0
+    for i in range(len(z)):
+        s+=z[i]
+    return (s/len(z))
+def Bias_var(z,z_p):
+    s=0
+    z_=MEAN(z_p)
+    z_2=MEAN(z_p**2)
+    for i in range(len(z)):
+        s+=(z_p[i]-z_)**2
+    var = z_2-z_**2#s/len(z_p)
+    #var = np.sum(z_p**2)/len(z_p)-(np.sum(z_p)/len(z_p))**2
+    bias = (z-MEAN(z_p))**2
+    bias = (np.sum(bias)/len(bias))**2
+    return bias,var 
+"""       
+def MSE_R2(z,z_s,n):
     mse= (np.sum((z-z_s)**2, axis=0))/n
     r=1-(mse/(sum((z-np.mean(z))**2)))
     return mse, r
@@ -35,6 +68,8 @@ def Bias_var(z,z_p):
     bias = (z-np.sum(z_p)/len(z_p))**2
     bias = (np.sum(bias)/len(bias))**2
     return bias,var
+    
+"""    
 def X_matrise(x,y,j,n):
     
     v=( j*2+1,n)
@@ -114,7 +149,7 @@ x = C.reshape(-1,1)
 y = R.reshape(-1,1)
 num_data = patch_size_row*patch_size_col
 # Find the start indices of each patch
-num_patches = 1
+num_patches = 5
 np.random.seed(4155)
 
 row_starts = np.random.randint(0,n-patch_size_row,num_patches)
@@ -122,14 +157,18 @@ col_starts = np.random.randint(0,m-patch_size_col,num_patches)
 
 
 Grad =7
-d=(8,1)
+d=(8,5)
 M_mse = np.zeros(d)
 M_r2 = np.zeros(d)
 M_beta = np.zeros(d)
 M_var = np.zeros(d)
 M_bias = np.zeros(d)
+A_mse= np.zeros(8)
+A_bias= np.zeros(8)
+A_r2= np.zeros(8)
+A_var= np.zeros(8)
 
-for g in range(11,12):
+for g in range(4,12):
     
     for i,row_start, col_start in zip(np.arange(num_patches),row_starts, col_starts):
            
@@ -141,28 +180,29 @@ for g in range(11,12):
             z = patch.reshape(-1,1)
             X_data=X_matrise(x,y, g,num_data)
         
-            beta_ols = np.linalg.inv(X_data.T@X_data)@X_data.T@z
+            beta = np.linalg.inv(X_data.T@X_data)@X_data.T@z
      
-            X_pred=X_matrise2(cols, rows,g,100,beta_ols)
+            X_pred=X_matrise2(cols1, rows1,g,100,beta)
        
 
 
        
-            z_p = X_pred
+            z_p =np.ravel( X_pred)
+            
+            
+            #mse = np.sum( (z_p- patch)**2 )/num_data
         
-        
-            mse = np.sum( (z_p- patch)**2 )/num_data
-        
-            var = np.sum( (z_p - np.mean(z_p))**2 )/num_data
-            bias = (np.sum( (patch - np.mean(z_p))**2 )/num_data)**2
-        
+            #var = np.sum( (z_p - np.mean(z_p))**2 )/num_data
+            #bias = (np.sum( (patch - np.mean(z_p))**2 )/num_data)**2
+            mse, R2=MSE_R2(np.ravel(patch),z_p,len(z_p))
+            bias, var=Bias_var(np.ravel(patch),z_p)
             print("patch %d, from (%d, %d) to (%d, %d)"%(i+1, row_start, col_start, row_end,col_end))
-            R2 = 1 - np.sum( (z_p - patch)**2 )/np.sum( (patch - np.mean(patch))**2 )
+            #R2 = 1 - np.sum( (patch-z_p)**2 )/np.sum( (patch - np.mean(patch))**2 )
             print("variance: %g"%var)
             print("bias: %g\n"%bias)
             print("mse: %g\nR2: %g"%(mse, R2))
             
-            surface_plot(z_p,'Fitted terrain surface',patch)
+            #surface_plot(z_p,'Fitted terrain surface',patch)
             
             
             M_mse[g-4][i] = mse
@@ -170,27 +210,31 @@ for g in range(11,12):
             
             M_var[g-4][i] = var
             M_bias[g-4][i] = bias
-
+            
         
             plt.show() 
+     
+"""        
             
-            
-            
-            
+for i in range(8):
+        A_mse[i]=np.sum(M_mse[i])/5 
+        A_r2[i]=np.sum(M_r2[i])/5
+        A_var[i]=np.sum(M_var[i])/5 
+        A_bias[i]=np.sum(M_bias[i])/5            
             
 M_r2T= M_r2.T        
 M_mseT= M_mse.T
 M_varT= M_var.T
 M_biasT= M_bias.T           
 g=[4,5,6,7,8,9, 10,11]   
-"""        
+       
 fig1 = plt.figure()
 
 
 for i in range(5):
     
     plt.plot(g,M_mseT[i],'-', label="test") 
-#plt.plot(g,A_mse,'*', label="test")     
+plt.plot(g,A_mse,'*', label="test")     
 plt.xlabel(r'$Polynom grad$')
 plt.ylabel(r'$MSE$')
 plt.title('')
@@ -205,7 +249,7 @@ fig2 = plt.figure()
 for i in range(5):
     
     plt.plot(g,M_r2T[i],'-', label="test") 
-#plt.plot(g,A_r2,'*', label="test")     
+plt.plot(g,A_r2,'*', label="test")     
 plt.xlabel(r'$Polynom grad$')
 plt.ylabel(r'$R2$')
 plt.title('')
@@ -221,7 +265,7 @@ fig3 = plt.figure()
 for i in range(5):
     
     plt.plot(g,M_varT[i],'-', label="test") 
-#plt.plot(g,A_var,'*', label="test")     
+plt.plot(g,A_var,'*', label="test")     
 plt.xlabel(r'$Polynom grad$')
 plt.ylabel(r'$var$')
 plt.title('')
@@ -235,7 +279,7 @@ fig4 = plt.figure()
 for i in range(5):
     
     plt.plot(g,M_biasT[i],'-', label="test") 
-#plt.plot(g,A_bias,'*', label="test")     
+plt.plot(g,A_bias,'*', label="test")     
 plt.xlabel(r'$Polynom grad$')
 plt.ylabel(r'$bias^2$')
 plt.title('')

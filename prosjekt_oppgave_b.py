@@ -27,9 +27,42 @@ y= (np.random.rand(data_point,1))
 y_train=np.split(y,10)[:9]
 y_test=np.split(y,10)[9:]
 def MSE_R2(z,z_s,n):
+    s=0
+    r=0
+    z_=MEAN(z)
+    for i in range(len(z)):
+            
+            s+=(z[i]-z_s[i])**2
+            r+=(z[i]-z_)**2
+            
+    
+    
+    mse=s/len(z) #np.mean( np.mean((z - z_s)**2) ) ...(np.sum((z-z_s)**2, axis=0))/n
+    
+    r2=1-(s/r)#1-(mse*(len(z))/(sum((z-np.mean(z))**2)))
+    return mse, r2
+def MEAN(z):
+    s=0
+    for i in range(len(z)):
+        s+=z[i]
+    return (s/len(z))
+def Bias_var(z,z_p):
+    s=0
+    z_=MEAN(z_p)
+    z_2=MEAN(z_p**2)
+    for i in range(len(z)):
+        s+=(z_p[i] -z_)**2
+    var = z_2-z_**2#s/len(z_p)
+    #var = np.sum(z_p**2)/len(z_p)-(np.sum(z_p)/len(z_p))**2
+    bias = (z-np.sum(z_p)/len(z_p))**2
+    bias = (np.sum(bias)/len(bias))**2
+    return bias,var
+"""
+def MSE_R2(z,z_s,n):
     mse= (np.sum((z-z_s)**2, axis=0))/n
     r=1-(mse/(sum((z-np.mean(z))**2)))
     return mse, r
+"""
 def FrankeFunction(x,y):
     term1 = 0.75*np.exp(-(0.25*(9*x-2)**2) - 0.25*((9*y-2)**2))
     term2 = 0.75*np.exp(-((9*x+1)**2)/49.0 - 0.1*(9*y+1))
@@ -58,13 +91,13 @@ def X_matrise(x,y,j,n):
             
   
     return X.T
-
+"""
 def Bias_var(z,z_p):
     var = np.sum(z_p**2)/len(z_p)-(np.sum(z_p)/len(z_p))**2
     bias = (z-np.sum(z_p)/len(z_p))**2
     bias = (np.sum(bias)/len(bias))**2
     return bias,var
-
+"""
 
 
 x_test, y_test = np.meshgrid(sorted(x_test[0]),sorted(x_test[0]))
@@ -80,7 +113,7 @@ L_r2=list()
 L_bias=list()
 L_var=list()
 
-d=(1,1)
+d=(6,9)
 MA_mse = np.zeros(d)
 MA_r2 = np.zeros(d)
 MA_beta = np.zeros(d)
@@ -88,8 +121,8 @@ MA_var = np.zeros(d)
 MA_bias = np.zeros(d)
 
 Grad= 7
-for g in range(5,6):
-    d2=(1,1)
+for g in range(1,7):
+    d2=(9,9)
     M_mse = np.zeros(d2)
     M_r2 = np.zeros(d2)
     M_beta = np.zeros(d2)
@@ -131,7 +164,7 @@ for g in range(5,6):
         I = np.eye(1+g*2)
         E =X.T@X
     
-        lam_values = [1e-4]
+        lam_values = [1e-4,1e-3,1e-2,1e-1,1,1e1,1e2,1e3,1e4]
         num_values = len(lam_values)
         beta_r = np.zeros((1+g*2,num_values))
         for i,lam in enumerate(lam_values):
@@ -144,6 +177,7 @@ for g in range(5,6):
         Beta_liste.append(beta_r)
         mse= np.zeros((num_values, 1))
         r2= np.zeros((num_values, 1))
+        """
         fig = plt.figure()
         ax = fig.add_subplot(1,2,1,projection='3d')
         ax.plot_surface(x_test,y_test,z_s.reshape(n,n),cmap=cm.viridis,linewidth=0)
@@ -255,7 +289,7 @@ plt.xscale('log')
 plt.title('Polynom grad')
 fig4.savefig('C:\\Users\\eirik\\OneDrive\\Dokumenter\\Fys-stk\\bias(R).png')
 plt.show()
-
+"""
 plt.plot(lam_values,MA_bias[i],'-', label=("Grad",i+1)) 
 
 plt.xlabel(r'$lamda$')
